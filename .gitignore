@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.log
+coverage/
+.DS_Store
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars
+terraform/scalelink_ssh_key.pem
