@@ -17,6 +17,7 @@ const created = new Counter('created_responses');
 const shortenLatency = new Trend('shorten_latency_ms');
 
 export const options = {
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   scenarios: {
     // Ramps up gradually so you can see the throughput ceiling rather than
     // just slamming the service at max concurrency from second zero.
@@ -72,7 +73,7 @@ export default function () {
 }
 
 export function handleSummary(data) {
-  const p50 = data.metrics.http_req_duration.values['p(50)'];
+  const p50 = data.metrics.http_req_duration.values['med'];
   const p95 = data.metrics.http_req_duration.values['p(95)'];
   const p99 = data.metrics.http_req_duration.values['p(99)'];
   const rps = data.metrics.http_reqs.values.rate;
