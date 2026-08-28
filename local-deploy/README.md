@@ -82,20 +82,30 @@ the Azure version would have given, just running locally.
 
 ## 5. Run the load test
 
+**Important:** free Cloudflare quick tunnels are explicitly not built for
+high sustained concurrency (Cloudflare's own docs: *"no uptime
+guarantee... not intended for production"*). At the default 1000 req/s
+target, this can produce misleading 429/connection-reset noise that has
+nothing to do with your app — verified by testing the rate limiter
+directly against real Redis (zero false blocks at 44,000 requests to one
+key) and by hitting the stack directly, bypassing the tunnel (zero false
+blocks there too). Use `PEAK_RPS` to test at a level the tunnel handles
+cleanly:
+
 ```bash
 cd loadtest
-k6 run -e BASE_URL=https://random-words-here.trycloudflare.com k6-script.js
+k6 run -e BASE_URL=https://random-words-here.trycloudflare.com -e PEAK_RPS=150 k6-script.js
 ```
 
 At the end, note the summary line — that's your real, live, resume-quotable
 number:
 ```
-"handled 850 req/sec at p99 180ms across 2 load-balanced instances"
+"handled 145 req/sec at p99 180ms across 2 load-balanced instances"
 ```
 
-(The exact number will depend on your laptop's CPU/RAM — that's fine and
-expected; the point is it's a real measured result from a real deployed
-system, not an estimate.)
+(The exact number will depend on your laptop's CPU/RAM and the tunnel's
+condition that day — that's fine and expected; the point is it's a real
+measured result from a real deployed system, not an estimate.)
 
 ## 6. Shut down
 

@@ -11,6 +11,14 @@ import { Counter, Trend } from 'k6/metrics';
 // manually first to confirm both instances are actually up.
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
+// Free Cloudflare quick tunnels are explicitly not built for sustained high
+// concurrency (Cloudflare's own docs: "no uptime guarantee... not intended
+// for production"). Peak throughput is configurable so you can test at a
+// level the tunnel handles cleanly: -e PEAK_RPS=150 for a conservative,
+// trustworthy run; omit it for the default aggressive 1000 req/s ceiling
+// (best reserved for testing against a real cloud deployment, not a free
+// tunnel).
+const PEAK_RPS = Number(__ENV.PEAK_RPS) || 1000;
 
 const rateLimited = new Counter('rate_limited_responses');
 const created = new Counter('created_responses');
@@ -23,15 +31,15 @@ export const options = {
     // just slamming the service at max concurrency from second zero.
     ramping_throughput: {
       executor: 'ramping-arrival-rate',
-      startRate: 50,
+      startRate: Math.min(50, PEAK_RPS),
       timeUnit: '1s',
-      preAllocatedVUs: 200,
-      maxVUs: 500,
+      preAllocatedVUs: Math.min(200, PEAK_RPS * 2),
+      maxVUs: Math.min(500, PEAK_RPS * 3),
       stages: [
-        { target: 100, duration: '20s' },
-        { target: 500, duration: '30s' },
-        { target: 1000, duration: '30s' },
-        { target: 1000, duration: '20s' }, // hold at peak to see steady-state p99
+        { target: Math.round(PEAK_RPS * 0.2), duration: '20s' },
+        { target: Math.round(PEAK_RPS * 0.5), duration: '30s' },
+        { target: PEAK_RPS, duration: '30s' },
+        { target: PEAK_RPS, duration: '20s' }, // hold at peak to see steady-state p99
         { target: 0, duration: '10s' },
       ],
     },
