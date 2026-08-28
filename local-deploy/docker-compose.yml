@@ -13,6 +13,8 @@ services:
       REDIS_URL: redis://redis:6379
       INSTANCE_ID: app-1
       BASE_URL: http://localhost:8080
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-20}
+      RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS:-10}
     depends_on:
       - redis
     restart: unless-stopped
@@ -25,6 +27,8 @@ services:
       REDIS_URL: redis://redis:6379
       INSTANCE_ID: app-2
       BASE_URL: http://localhost:8080
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-20}
+      RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS:-10}
     depends_on:
       - redis
     restart: unless-stopped
